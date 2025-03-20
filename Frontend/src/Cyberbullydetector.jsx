@@ -4,11 +4,12 @@ import axios from "axios";
 const CyberbullyDetector = () => {
   const [text, setText] = useState("");
   const [prediction, setPrediction] = useState(null);
+  const [model, setModel] = useState("Logistic Regression");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://127.0.0.1:5000/predict", { text });
+      const response = await axios.post("http://127.0.0.1:5000/predict", { text, model });
       setPrediction(response.data.prediction);
     } catch (error) {
       console.error("Error predicting:", error);
@@ -16,7 +17,19 @@ const CyberbullyDetector = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
+    <div className="relative flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
+      <div className="absolute top-4 right-4">
+        <select
+          value={model}
+          onChange={(e) => setModel(e.target.value)}
+          className="p-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-md"
+        >
+          <option>Logistic Regression</option>
+          <option>SVM</option>
+          <option>Random Forest</option>
+        </select>
+      </div>
+
       <div className="bg-gray-800 shadow-xl rounded-lg p-6 w-full max-w-md border border-gray-700">
         <h2 className="text-2xl font-bold text-center text-blue-400 mb-4">
           🚀 Cyberbully Detector
