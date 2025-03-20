@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import ModelSelector from "./ModelSelector"; // Import the new component
 
 const CyberbullyDetector = () => {
   const [text, setText] = useState("");
@@ -18,17 +19,8 @@ const CyberbullyDetector = () => {
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
-      <div className="absolute top-4 right-4">
-        <select
-          value={model}
-          onChange={(e) => setModel(e.target.value)}
-          className="p-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-md"
-        >
-          <option>Logistic Regression</option>
-          <option>SVM</option>
-          <option>Random Forest</option>
-        </select>
-      </div>
+      {/* Model Selector Component */}
+      <ModelSelector model={model} setModel={setModel} />
 
       <div className="bg-gray-800 shadow-xl rounded-lg p-6 w-full max-w-md border border-gray-700">
         <h2 className="text-2xl font-bold text-center text-blue-400 mb-4">
