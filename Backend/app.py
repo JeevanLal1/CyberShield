@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pickle
+import numpy as np
 
 # Load the saved model and vectorizer
 with open("cyberbully_model.pkl", "rb") as f:
@@ -17,7 +18,7 @@ CORS(app)  # Enable CORS for frontend communication
 def home():
     return "Cyberbullying Detection API is running!"
 
-@app.route('/predict', methods=['POST'])
+@app.route('/dashboard', methods=['POST'])
 def predict():
     try:
         data = request.get_json()
@@ -29,17 +30,22 @@ def predict():
 
         # Preprocess and predict
         text_vectorized = vectorizer.transform([text])
-        prediction = model.predict(text_vectorized)[0]
+        prediction = model.predict(text_vectorized)[0]  # 0 = Safe, 1 = Cyberbullying
+        confidence = model.predict_proba(text_vectorized)[0]  # Probability scores
 
-        print(f"Flask Prediction Sent to Frontend: {prediction}")  # ✅ Debugging
+        # Extract confidence score for the predicted class
+        confidence_score = round(float(np.max(confidence)) * 100, 2)
 
-        return jsonify({"prediction": int(prediction)})
+        print(f"Flask Prediction: {prediction}, Confidence: {confidence_score}%")  # ✅ Debugging
+
+        return jsonify({
+            "prediction": int(prediction),  # 0 or 1
+            "confidence": confidence_score
+        })
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-
 # Run the Flask app
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
