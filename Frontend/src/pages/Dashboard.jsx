@@ -7,40 +7,41 @@ import ResultDisplay from "../component/ResultDisplay";
 function Dashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState(null);
-
+  const [selectedModel, setSelectedModel] = useState("logistic_regression"); // Default model
 
   const handleSubmit = async (text) => {
     setIsLoading(true);
-  
+
     if (!text.trim()) {
       setResult({ prediction: null, confidence: 0, status: "❌ Please enter some text." });
       setIsLoading(false);
       return;
     }
-  
+
     try {
-      const response = await axios.post("http://127.0.0.1:5000/dashboard", { text });
-      
-      // Ensure valid response format
-      const { prediction, confidence } = response.data || {};
-  
+      const response = await axios.post("http://127.0.0.1:5000/dashboard", {
+        text,
+        model: selectedModel, // Send selected model to backend
+      });
+
+      const { prediction, confidence, model } = response.data || {};
+
       if (typeof prediction !== "number" || typeof confidence !== "number" || isNaN(confidence)) {
         throw new Error("Invalid response from server");
       }
-  
-      // Formatting result for ResultDisplay
+
       setResult({
-        prediction, // Pass prediction directly for ResultDisplay
-        confidence: confidence.toFixed(2), // Ensure valid number
+        prediction,
+        confidence: confidence.toFixed(2),
+        model, // Show which model was used
       });
-  
     } catch (error) {
       console.error("Error predicting:", error);
-      setResult({ prediction: null, confidence: 0, status: "❌ Error analyzing text" });
+      setResult({ prediction: null, confidence: 0, status: "Error analyzing text" });
     }
-  
+
     setIsLoading(false);
-  };  
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -58,6 +59,20 @@ function Dashboard() {
           helping create safer online spaces.
         </p>
       </motion.div>
+
+      {/* Model Selection */}
+      <div className="mb-6 text-center">
+        <label className="text-lg font-semibold text-gray-900 dark:text-white">Select Model:</label>
+        <select
+          className="ml-4 p-2 border rounded-lg dark:bg-gray-800 dark:text-white"
+          value={selectedModel}
+          onChange={(e) => setSelectedModel(e.target.value)}
+        >
+          <option value="logistic_regression">Logistic Regression</option>
+          <option value="svm">SVM</option>
+          <option value="random_forest">Random Forest</option>
+        </select>
+      </div>
 
       {/* Form and Result Section */}
       <div className="space-y-8">

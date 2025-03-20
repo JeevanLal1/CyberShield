@@ -32,14 +32,14 @@ const ResultDisplay = ({ result }) => {
 
   // Bar chart data (adjust values based on prediction)
   const data = isBully
-    ? [
-        { name: "Safe Content", value: 100 - confidence, color: "#10B981" }, // Green (Smaller)
-        { name: "Harmful Content", value: confidence, color: "#EF4444" }, // Red (Larger)
-      ]
-    : [
-        { name: "Safe Content", value: confidence, color: "#10B981" }, // Green (Larger)
-        { name: "Harmful Content", value: 100 - confidence, color: "#EF4444" }, // Red (Smaller)
-      ];
+  ? [
+      { name: "Safe Content", value: parseFloat((100 - confidence).toFixed(2)), color: "#10B981" },
+      { name: "Harmful Content", value: parseFloat(confidence.toFixed(2)), color: "#EF4444" },
+    ]
+  : [
+      { name: "Safe Content", value: parseFloat(confidence.toFixed(2)), color: "#10B981" },
+      { name: "Harmful Content", value: parseFloat((100 - confidence).toFixed(2)), color: "#EF4444" },
+    ];
 
   return (
     <motion.div
