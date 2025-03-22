@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pickle
-from CyberShield import preprocess_text
+from preprocessor import preprocess_text
 # Load the saved model and vectorizer
 with open("cyberbully_model.pkl", "rb") as f:
     model = pickle.load(f)
@@ -10,6 +10,7 @@ with open("tfidf_vectorizer.pkl", "rb") as f:
     vectorizer = pickle.load(f)
 
 # Initialize Flask app
+
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend communication
 
