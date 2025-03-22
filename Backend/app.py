@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pickle
-
+from CyberShield import preprocess_text
 # Load the saved model and vectorizer
 with open("cyberbully_model.pkl", "rb") as f:
     model = pickle.load(f)
@@ -24,7 +24,7 @@ def predict():
         if not data or "text" not in data:
             return jsonify({"error": "Invalid input"}), 400
 
-        text = data["text"]
+        text = preprocess_text(data["text"])
         print(f"Received text: {text}")  # ✅ Debugging
 
         # Preprocess and predict
