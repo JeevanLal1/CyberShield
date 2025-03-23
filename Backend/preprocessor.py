@@ -1,28 +1,37 @@
 import nltk
 import re
+import pickle
+import numpy as np
 from nltk.stem import WordNetLemmatizer
-nltk.download('punkt')
-nltk.download('punkt_tab')
 from nltk.corpus import stopwords
-nltk.download('stopwords')
 from nltk.tokenize import word_tokenize
-from tensorflow.keras.preprocessing.text import Tokenizer
-from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-stop_words=stopwords.words('english')
-lemmatizer=WordNetLemmatizer()
-def preprocess_text(text,model):
-    if model=='LSTM':
-        sample_sequence = tokenizer.texts_to_sequences(sample_text)
-        sample_padded = pad_sequences(sample_sequence, maxlen=max_sequence_length)
-        return sample_padded
-    else:
-        text = re.sub(r'[^a-z\s]', '', text)
-        text = text.strip()
-        tokens = word_tokenize(text.lower())
-        lemmatized = [
+# Download required NLTK data
+nltk.download("stopwords")
+nltk.download("wordnet")
+nltk.download("punkt")
+
+# Initialize stopwords and lemmatizer
+stop_words = set(stopwords.words("english"))
+lemmatizer = WordNetLemmatizer()
+
+def preprocess_text(text, model):
+    """Preprocess text for traditional ML models (Not used for LSTM)."""
+
+    # Convert NumPy array to string if necessary
+    if isinstance(text, np.ndarray):
+        text = str(text[0])  # Convert array to string if needed
+
+    if not isinstance(text, str):
+        raise ValueError("Input text must be a string")  # Prevent further errors
+
+    # Only apply text cleaning for ML models (LSTM uses raw text)
+    text = re.sub(r"[^a-z\s]", "", text.lower())  # Remove special characters and lowercase
+    text = text.strip()
+    tokens = word_tokenize(text)  # Tokenize text
+    lemmatized = [
         lemmatizer.lemmatize(word)
         for word in tokens
-        if word not in stop_words 
+        if word not in stop_words  # Remove stopwords
     ]
-    return " ".join(lemmatized)
+    return " ".join(lemmatized)  # Return cleaned text for ML models

@@ -3,21 +3,32 @@ from flask_cors import CORS
 import pickle
 import joblib
 import numpy as np
-from preprocessor import preprocess_text
+import tensorflow as tf
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.models import load_model
 
+# Initialize Flask app
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend communication
 
-# Load vectorizer (common for all models)
+#Load TF-IDF Vectorizer (for ML models)
 with open("tfidf_vectorizer.pkl", "rb") as f:
     vectorizer = pickle.load(f)
 
-# Load all models
+# Load Tokenizer (for LSTM model)
+with open("tokenizer.pickle", "rb") as f:
+    tokenizer = pickle.load(f)
+
+# Load ML and LSTM Models
 models = {
-    "logistic_regression": joblib.load("cyberbully_model.pkl"),
+    "logistic_regression": joblib.load("logistic_regression.pkl"),
     "svm": joblib.load("svm_model.pkl"),
     "random_forest": joblib.load("random_forest_model.pkl"),
+    "lstm": load_model("lstm_model.h5"),  # Load LSTM model
 }
+
+# Define sequence length (same as training)
+MAX_SEQUENCE_LENGTH = 100  
 
 @app.route('/')
 def home():
@@ -34,44 +45,52 @@ def predict():
 
         text = data["text"]
         selected_model = data["model"]
-        text = preprocess_text(data["text"],selected_model)
-        print(text)
-        
-
-        print(f"Received text: {text}, Model: {selected_model}")  # Debugging
 
         # Validate model selection
         if selected_model not in models:
-            return jsonify({"error": "Invalid model selected. Choose from 'logistic_regression', 'svm', or 'random_forest'."}), 400
+            return jsonify({"error": "Invalid model selected"}), 400
 
-        model = models[selected_model]  # Load the selected model
+        # Ensure text is always a string
+        if not isinstance(text, str):
+            text = str(text)
 
-        # Preprocess text
-        text_vectorized = vectorizer.transform([text])
+        if selected_model == "lstm":
+            #  Tokenize and pad text for LSTM (NO STOPWORD REMOVAL OR LEMMATIZATION)
+            sequence = tokenizer.texts_to_sequences([text])
+            padded_sequence = pad_sequences(sequence, maxlen=MAX_SEQUENCE_LENGTH)
 
-        # Make prediction
-        prediction = model.predict(text_vectorized)
-        if len(prediction) == 0:
-            return jsonify({"error": "Model failed to make a prediction."}), 500
-        
-        prediction_int = int(prediction[0])  # Convert to integer (0 or 1)
+            # Predict using LSTM
+            model = models[selected_model]
+            prediction = model.predict(padded_sequence)
 
-        # Handle probability scores safely
-        confidence_score = None
-        if hasattr(model, "predict_proba"):  # Check if model supports probability
-            confidence = model.predict_proba(text_vectorized)[0]  # Probability scores
-            confidence_score = round(float(np.max(confidence)) * 100, 2)
+            # Convert to binary output (0 = non-toxic, 1 = cyberbullying)
+            prediction_int = int(prediction[0][0] > 0.5)
+            confidence_score = round(float(prediction[0][0]) * 100, 2)  # Convert to percentage
 
-        print(f"Flask Prediction: {prediction_int}, Confidence: {confidence_score}%")  # Debugging
+        else:
+            # Preprocess and vectorize text for ML models
+            from preprocessor import preprocess_text
+            text = preprocess_text(text, selected_model)
+            text_vectorized = vectorizer.transform([text])
+
+            model = models[selected_model]
+            prediction = model.predict(text_vectorized)
+            prediction_int = int(prediction[0])
+
+            # Handle probability scores (if model supports it)
+            confidence_score = None
+            if hasattr(model, "predict_proba"):
+                confidence = model.predict_proba(text_vectorized)[0]
+                confidence_score = round(float(np.max(confidence)) * 100, 2)
 
         return jsonify({
-            "prediction": prediction_int,  # 0 or 1
+            "prediction": prediction_int,
             "confidence": confidence_score,
             "model": selected_model
         })
 
     except Exception as e:
-        print(f"Error: {str(e)}")  # Log errors for debugging
+        print(f"Error: {str(e)}")  # Log errors
         return jsonify({"error": f"Internal Server Error: {str(e)}"}), 500
 
 # Run the Flask app

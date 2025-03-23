@@ -26,14 +26,14 @@ function Dashboard() {
 
       const { prediction, confidence, model } = response.data || {};
 
-      if (typeof prediction !== "number" || typeof confidence !== "number" || isNaN(confidence)) {
+      if (typeof prediction !== "number" || (confidence !== null && isNaN(confidence))) {
         throw new Error("Invalid response from server");
       }
 
       setResult({
         prediction,
-        confidence: confidence.toFixed(2),
-        model, // Show which model was used
+        confidence: confidence ? confidence.toFixed(2) : "N/A", // Confidence might not be available for LSTM
+        model, 
       });
     } catch (error) {
       console.error("Error predicting:", error);
@@ -71,6 +71,7 @@ function Dashboard() {
           <option value="logistic_regression">Logistic Regression</option>
           <option value="svm">SVM</option>
           <option value="random_forest">Random Forest</option>
+          <option value="lstm">LSTM (Deep Learning)</option> 
         </select>
       </div>
 
