@@ -3,8 +3,8 @@ from flask_cors import CORS
 import pickle
 import joblib
 import numpy as np
+from preprocessor import preprocess_text
 
-# Initialize Flask app
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend communication
 
@@ -34,6 +34,9 @@ def predict():
 
         text = data["text"]
         selected_model = data["model"]
+        text = preprocess_text(data["text"],selected_model)
+        print(text)
+        
 
         print(f"Received text: {text}, Model: {selected_model}")  # Debugging
 
