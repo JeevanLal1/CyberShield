@@ -30,10 +30,12 @@ def predict():
         # Check if input text and model are provided
         if not data or "text" not in data or "model" not in data:
             return jsonify({"error": "Invalid input"}), 400
-
-        text = preprocess_text(data["text"])
-        print(text)
+        
+        ##for LSTM pass selected_model='LSTM'
         selected_model = data["model"]
+        text = preprocess_text(data["text"],selected_model)
+        print(text)
+        
 
         print(f"Received text: {text}, Model: {selected_model}")  #  Debugging
 
