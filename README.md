@@ -4,11 +4,13 @@ A **machine learning-powered web application** that detects **cyberbullying in t
 
 ---
 
-## 📌 Features  
-✅ Detects if a text message contains cyberbullying content.  
-✅ Uses **Logistic Regression, SVM, and Random Forest** with **TF-IDF vectorization**.  
-✅ REST API built using **Flask**.  
-✅ Frontend built with **React.js**.  
+## 📌 Features
+✅ **Multi-Model Cyberbullying Detection**: Supports **Logistic Regression, SVM, Random Forest, and LSTM**.  
+✅ **Interactive Web Interface**: User-friendly **React.js frontend**.  
+✅ **REST API with Flask**: Allows easy integration with other applications.  
+✅ **Real-Time Analysis**: Predicts cyberbullying messages instantly.  
+✅ **Supports TF-IDF & Deep Learning**: Uses **TF-IDF for ML models** and **word embeddings for LSTM**.  
+ 
 
 ---
 
@@ -68,9 +70,9 @@ The frontend should now be running on **http://localhost:5173/**.
 # In frontend user can select any of the below given ML models and detect the text if it is cyberbullying or not. 
 
 ## 🛠️ Tech Stack  
-- **Backend:** Flask, Python, scikit-learn
+- **Backend:** Flask, TensorFlow/Keras , scikit-learn
 - **Frontend:** React.js, Tailwind CSS
-- **Machine Learning:** Logistic Regression, SVM, Random Forest, LSTM
+- **Machine Learning:** Logistic Regression, Support Vector Machine, Random Forest Classifier, LSTM(Long Short-Term Memory Neural Network)
 
 ---
 
