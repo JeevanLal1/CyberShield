@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pickle
+import joblib
 import numpy as np
 
 # Initialize Flask app
@@ -13,9 +14,9 @@ with open("tfidf_vectorizer.pkl", "rb") as f:
 
 # Load all models
 models = {
-    "logistic_regression": pickle.load(open("cyberbully_model.pkl", "rb")),
-    "svm": pickle.load(open("cyberbully_model_svm.pkl", "rb")),
-    "random_forest": pickle.load(open("random_forest_model.pkl", "rb")),
+    "logistic_regression": joblib.load("cyberbully_model.pkl"),
+    "svm": joblib.load("svm_model.pkl"),
+    "random_forest": joblib.load("random_forest_model.pkl"),
 }
 
 @app.route('/')
@@ -26,40 +27,49 @@ def home():
 def predict():
     try:
         data = request.get_json()
-        
-        # Check if input text and model are provided
+
+        # Validate input
         if not data or "text" not in data or "model" not in data:
-            return jsonify({"error": "Invalid input"}), 400
+            return jsonify({"error": "Invalid input. Provide 'text' and 'model' fields."}), 400
 
         text = data["text"]
         selected_model = data["model"]
 
-        print(f"Received text: {text}, Model: {selected_model}")  #  Debugging
+        print(f"Received text: {text}, Model: {selected_model}")  # Debugging
 
-        # Validate model choice
+        # Validate model selection
         if selected_model not in models:
-            return jsonify({"error": "Invalid model selected"}), 400
-        
+            return jsonify({"error": "Invalid model selected. Choose from 'logistic_regression', 'svm', or 'random_forest'."}), 400
+
         model = models[selected_model]  # Load the selected model
 
-        # Preprocess and predict
+        # Preprocess text
         text_vectorized = vectorizer.transform([text])
-        prediction = model.predict(text_vectorized)[0]  # 0 = Safe, 1 = Cyberbullying
-        confidence = model.predict_proba(text_vectorized)[0]  # Probability scores
 
-        # Extract confidence score for the predicted class
-        confidence_score = round(float(np.max(confidence)) * 100, 2)
+        # Make prediction
+        prediction = model.predict(text_vectorized)
+        if len(prediction) == 0:
+            return jsonify({"error": "Model failed to make a prediction."}), 500
+        
+        prediction_int = int(prediction[0])  # Convert to integer (0 or 1)
 
-        print(f"Flask Prediction: {prediction}, Confidence: {confidence_score}%")  #  Debugging
+        # Handle probability scores safely
+        confidence_score = None
+        if hasattr(model, "predict_proba"):  # Check if model supports probability
+            confidence = model.predict_proba(text_vectorized)[0]  # Probability scores
+            confidence_score = round(float(np.max(confidence)) * 100, 2)
+
+        print(f"Flask Prediction: {prediction_int}, Confidence: {confidence_score}%")  # Debugging
 
         return jsonify({
-            "prediction": int(prediction),  # 0 or 1
+            "prediction": prediction_int,  # 0 or 1
             "confidence": confidence_score,
             "model": selected_model
         })
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error: {str(e)}")  # Log errors for debugging
+        return jsonify({"error": f"Internal Server Error: {str(e)}"}), 500
 
 # Run the Flask app
 if __name__ == '__main__':
