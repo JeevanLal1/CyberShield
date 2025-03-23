@@ -67,7 +67,6 @@ npm run dev
 The frontend should now be running on **http://localhost:5173/**.
 
 ---
-# In frontend user can select any of the below given ML models and detect the text if it is cyberbullying or not. 
 
 ## 🛠️ Tech Stack  
 - **Backend:** Flask, TensorFlow/Keras , scikit-learn
