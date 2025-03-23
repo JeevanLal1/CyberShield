@@ -23,7 +23,7 @@ def preprocess_text(text, model):
         text = str(text[0])  # Convert array to string if needed
 
     if not isinstance(text, str):
-        raise ValueError("Input text must be a string")  # Prevent further errors
+        raise ValueError("Input text must be a string")
 
     # Only apply text cleaning for ML models (LSTM uses raw text)
     text = re.sub(r"[^a-z\s]", "", text.lower())  # Remove special characters and lowercase
